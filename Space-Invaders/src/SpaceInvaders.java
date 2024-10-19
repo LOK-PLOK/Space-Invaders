@@ -6,6 +6,22 @@ import javax.swing.*;
 
 
 public class SpaceInvaders extends JPanel {
+    class Block{
+       int x,y,width,height;
+       Image image;
+       boolean alive = true; // for aliens
+       boolean used = false; // for bullets
+
+        Block(int x,int y,int width, int height, Image image){
+            this.x = x;
+            this .y = y;
+            this.width = width;
+            this.height = height;
+            this.image = image;
+        }
+
+    }
+
     // Board
     int tileSize  = 32;
     int rows = 16;
@@ -19,6 +35,14 @@ public class SpaceInvaders extends JPanel {
     Image alienMagenta;
     Image alienYellow;
     ArrayList<Image> alienImgArray;
+
+    //ship;
+    int shipWidth = tileSize*2; // 64px
+    int shipHeight = tileSize; //32px
+    int shipX = tileSize*columns/2-tileSize;
+    int shipY = boardHeight - tileSize*2;
+
+    Block ship;
 
     SpaceInvaders(){
         setPreferredSize(new Dimension(boardWidth,boardHeight));
@@ -36,6 +60,17 @@ public class SpaceInvaders extends JPanel {
         alienImgArray.add(alienCyan);
         alienImgArray.add(alienMagenta);
         alienImgArray.add(alienYellow);
+
+        ship = new Block(shipX,shipY,shipWidth,shipHeight,shipImg);
+    }
+
+    public void paintComponent(Graphics g){
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    public void draw(Graphics g){
+        g.drawImage(ship.image, ship.x, ship.y, ship.width, ship.height,null);
     }
 }
 

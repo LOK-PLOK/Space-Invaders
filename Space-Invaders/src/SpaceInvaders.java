@@ -95,9 +95,9 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_LEFT){
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0){
             ship.x -= shipVelocityX;
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT && ship.x + ship.width + shipVelocityX <= boardWidth) {
             ship.x += shipVelocityX;
         }
     }

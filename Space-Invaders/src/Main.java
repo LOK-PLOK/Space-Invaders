@@ -20,6 +20,7 @@ public class Main {
         SpaceInvaders spaceInvaders = new SpaceInvaders();
         frame.add(spaceInvaders);
         frame.pack();
+        spaceInvaders.requestFocus();
         frame.setVisible(true);// maike frame visible
         ImageIcon image = new ImageIcon("src/space-invaders-icon.png"); //create image icon
         frame.setIconImage(image.getImage()); // changes icon of frame

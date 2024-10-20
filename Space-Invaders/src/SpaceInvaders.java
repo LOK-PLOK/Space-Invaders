@@ -44,8 +44,19 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
     int shipX = tileSize*columns/2-tileSize;
     int shipY = boardHeight - tileSize*2;
     int shipVelocityX = tileSize;
-
     Block ship;
+
+    //aliens
+    ArrayList<Block>alienArray;
+    int alienWidth = tileSize*2;
+    int alienHieght = tileSize;
+    int alienX = tileSize;
+    int alienY = tileSize;
+
+    int alienRows = 2;
+    int alienColumns = 3;
+    int alienCount = 0;
+
     Timer gameLoop;
 
     SpaceInvaders(){
@@ -68,9 +79,11 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
         alienImgArray.add(alienYellow);
 
         ship = new Block(shipX,shipY,shipWidth,shipHeight,shipImg);
+        alienArray = new ArrayList<Block>();
 
         // game timer
         gameLoop = new Timer(1000/60, this);
+        createAliens();
         gameLoop.start();
     }
 
@@ -80,7 +93,34 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
     }
 
     public void draw(Graphics g){
+        //ship
         g.drawImage(ship.image, ship.x, ship.y, ship.width, ship.height,null);
+
+        //aliens
+        for(int i = 0; i<alienArray.size();i++){
+            Block alien = alienArray.get(i);
+            if(alien.alive){
+                g.drawImage(alien.image, alien.x, alien.y, alien.width,alien.height,null);
+            }
+        }
+    }
+
+    public void createAliens(){
+        Random random = new Random();
+        for(int r = 0; r < alienRows; r++){
+            for(int c = 0;  c <alienColumns; c++){
+                int randomImgIndex = random.nextInt(alienImgArray.size());
+                Block alien = new Block(
+                        alienX+c*alienWidth,
+                        alienY+r*alienHieght,
+                        alienWidth,
+                        alienHieght,
+                        alienImgArray.get(randomImgIndex)
+                );
+                alienArray.add(alien);
+            }
+        }
+        alienCount = alienArray.size();
     }
 
     @Override

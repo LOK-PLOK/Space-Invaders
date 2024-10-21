@@ -56,6 +56,7 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
     int alienRows = 2;
     int alienColumns = 3;
     int alienCount = 0;
+    int alienVelocityX = 1;
 
     Timer gameLoop;
 
@@ -105,6 +106,27 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
         }
     }
 
+    public void move(){
+        //aliens
+        for(int i=0; i<alienArray.size();i++){
+            Block alien = alienArray.get(i);
+            if(alien.alive){
+                alien.x += alienVelocityX;
+
+                //if alien touches the borders
+                if(alien.x + alien.width >= boardWidth || alien.x <= 0){
+                    alienVelocityX *= -1;
+                    alien.x += alienVelocityX*2;
+
+                    //move all aliens down by one row
+                    for(int j = 0; j<alienArray.size();j++){
+                        alienArray.get(j).y += alienHieght;
+                    }
+                }
+            }
+        }
+    }
+
     public void createAliens(){
         Random random = new Random();
         for(int r = 0; r < alienRows; r++){
@@ -125,6 +147,7 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        move();
         repaint();
     }
 

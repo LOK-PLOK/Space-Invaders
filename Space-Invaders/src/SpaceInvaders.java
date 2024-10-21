@@ -65,6 +65,8 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
     int bulletVelocityY = -10; // bullet moving speed
 
     Timer gameLoop;
+    int score = 0;
+    boolean gameOver = false;
 
     SpaceInvaders(){
         setPreferredSize(new Dimension(boardWidth,boardHeight));
@@ -121,34 +123,67 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
                 g.fillRect(bullet.x,bullet.y,bullet.width,bullet.height); // solid white
             }
         }
+        g.setColor(Color.white);
+        g .setFont(new Font("Arial",Font.PLAIN,32));
+        if(gameOver){
+            g.drawString("Game Over: "+ String.valueOf(score),10,35);
+        }else{
+            g.drawString(String.valueOf(score),10,35);
+        }
     }
 
-    public void move(){
+    public void move() {
         //aliens
-        for(int i=0; i<alienArray.size();i++){
+        for (int i = 0; i < alienArray.size(); i++) {
             Block alien = alienArray.get(i);
-            if(alien.alive){
+            if (alien.alive) {
                 alien.x += alienVelocityX;
-
+    
                 //if alien touches the borders
-                if(alien.x + alien.width >= boardWidth || alien.x <= 0){
+                if (alien.x + alien.width >= boardWidth || alien.x <= 0) {
                     alienVelocityX *= -1;
-                    alien.x += alienVelocityX*2;
-
+                    alien.x += alienVelocityX * 2;
+    
                     //move all aliens down by one row
-                    for(int j = 0; j<alienArray.size();j++){
+                    for (int j = 0; j < alienArray.size(); j++) {
                         alienArray.get(j).y += alienHieght;
                     }
+                    
                 }
             }
         }
-
+    
         //bullets
-        for(int i =0; i<bulletArray.size();i++){
+        for (int i = 0; i < bulletArray.size(); i++) {
             Block bullet = bulletArray.get(i);
             bullet.y += bulletVelocityY;
+    
+            //bullet collision with aliens
+            for (int j = 0; j < alienArray.size(); j++) {
+                Block alien = alienArray.get(j);
+                if (!bullet.used && alien.alive && detectCollision(bullet, alien)) {
+                    bullet.used = true;
+                    alien.alive = false;
+                    alienCount--;
+                    score += 100;
+                }
+            }
         }
-
+        // clear bullets
+        while (bulletArray.size() > 0 && (bulletArray.get(0).used || bulletArray.get(0).y < 0)) {
+            bulletArray.remove(0);
+        }
+    
+        // next level
+        if (alienCount == 0) {
+            //increase the number of aliens in columns and rows by 1
+            score += alienColumns * alienRows * 100;
+            alienColumns = Math.min(alienColumns + 1, columns / 2 - 2); // cap column at 16/2 - 2 = 6
+            alienRows = Math.min(alienRows + 1, rows - 6);
+            alienArray.clear();
+            bulletArray.clear();
+            createAliens();
+        }
     }
 
     public void createAliens(){
@@ -157,8 +192,8 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
             for(int c = 0;  c <alienColumns; c++){
                 int randomImgIndex = random.nextInt(alienImgArray.size());
                 Block alien = new Block(
-                        alienX+c*alienWidth,
-                        alienY+r*alienHieght,
+                        alienX + c * alienWidth,
+                        alienY + r * alienHieght,
                         alienWidth,
                         alienHieght,
                         alienImgArray.get(randomImgIndex)
@@ -167,6 +202,12 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
             }
         }
         alienCount = alienArray.size();
+    }
+    public boolean detectCollision(Block a, Block b){
+        return a.x < b.x + b.width &&   // a's top left corner doesn't reach b's top right corner
+                a.x + a.width > b.x &&    // a's top right corner passes b't top left corner
+                a.y < b.y + b.height &&   // a's top left corner doesn't reach b's bottom left corner
+                a.y + a.height > b.y;       // a's bottom left corner passes b's top left corner
     }
 
     @Override

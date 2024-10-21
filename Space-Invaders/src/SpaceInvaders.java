@@ -124,11 +124,11 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
             }
         }
         g.setColor(Color.white);
-        g .setFont(new Font("Arial",Font.PLAIN,32));
+        g .setFont(new Font("Arial",Font.PLAIN,15));
         if(gameOver){
-            g.drawString("Game Over: "+ String.valueOf(score),10,35);
+            g.drawString("Game Over: "+ String.valueOf(score),10,20);
         }else{
-            g.drawString(String.valueOf(score),10,35);
+            g.drawString("Score: "+String.valueOf(score),10,35);
         }
     }
 
@@ -186,6 +186,7 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
             alienRows = Math.min(alienRows + 1, rows - 6);
             alienArray.clear();
             bulletArray.clear();
+//            alienVelocityX = 1; optionall
             createAliens();
         }
     }
@@ -230,7 +231,19 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if(e.getKeyCode() == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0){
+        if(gameOver){
+            ship.x = shipX;
+            alienArray.clear();
+            bulletArray.clear();;
+            score = 0;
+            alienVelocityX = 1;
+            alienColumns = 3;
+            alienRows = 2;
+            gameOver = false;
+            createAliens();
+            gameLoop.start();
+        }
+        else if(e.getKeyCode() == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0){
             ship.x -= shipVelocityX;
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT && ship.x + ship.width + shipVelocityX <= boardWidth) {
             ship.x += shipVelocityX;

@@ -148,7 +148,11 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
                     for (int j = 0; j < alienArray.size(); j++) {
                         alienArray.get(j).y += alienHieght;
                     }
-                    
+                }
+    
+                // Check if any alien hits the ship
+                if (detectCollision(alien, ship)) {
+                    gameOver = true;
                 }
             }
         }
@@ -214,6 +218,9 @@ public class SpaceInvaders extends JPanel implements  ActionListener, KeyListene
     public void actionPerformed(ActionEvent e) {
         move();
         repaint();
+        if(gameOver){
+            gameLoop.stop();
+        }
     }
 
     @Override

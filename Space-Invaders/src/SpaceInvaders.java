@@ -75,6 +75,17 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     //level
     int currentLevel = 1;
 
+    //Alien Bullets
+    ArrayList<Block> alienBulletArray;
+    int alienBulletWidth = tileSize/8;
+    int alienBulletHeight = tileSize/2;
+    int alienBulletVelocityY = 5; // Alien bullets move downward
+
+      // Variables to control firing rate
+    int alienFireRate = 180; // Adjust this for slower firing, 180 frames = 3 seconds
+    int fireCounter = alienFireRate;
+    Random random = new Random(); //Random fire logic
+
     SpaceInvaders() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -102,6 +113,8 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         gameLoop = new Timer(1000 / 60, this);
         createAliens();
         gameLoop.start();
+
+        alienBulletArray = new ArrayList<>();
     }
 
     private void createUltimateLaser() {
@@ -135,6 +148,16 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             if (!bullet.used) {
                 //g.drawRect(bullet.x,bullet.y,bullet.width,bullet.height); // hollow bullets
                 g.fillRect(bullet.x, bullet.y, bullet.width, bullet.height); //solid white
+            }
+        }
+
+
+        // Draw alien bullets
+        g.setColor(Color.red);
+        for (int i = 0; i < alienBulletArray.size(); i++) {
+            Block alienBullet = alienBulletArray.get(i);
+            if (!alienBullet.used) {
+                g.fillRect(alienBullet.x, alienBullet.y, alienBullet.width, alienBullet.height);
             }
         }
 
@@ -246,6 +269,68 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 //          alientVelocityX = 1; optional
             createAliens();
         }
+
+        // Check if aliens should fire a bullet
+        handleAlienShooting();
+
+        // Move alien bullets
+        for (int i = 0; i < alienBulletArray.size(); i++) {
+            Block alienBullet = alienBulletArray.get(i);
+            alienBullet.y += alienBulletVelocityY;
+
+            // Check collision with the player's ship
+            if (!alienBullet.used && detectCollision(alienBullet, ship)) {
+                gameOver = true;
+            }
+        }
+
+        // Remove alien bullets that go off-screen
+        while (alienBulletArray.size() > 0 && (alienBulletArray.get(0).y > boardHeight)) {
+            alienBulletArray.remove(0);
+        }
+        
+
+    }
+
+
+
+    private void handleAlienShooting() {
+        // Shoot only if fireCounter reaches 0
+        if (fireCounter <= 0) {
+            // Select a random alive alien to shoot
+            Block shooter = selectRandomAlien();
+            if (shooter != null) {
+                fireAlienBullet(shooter);
+            }
+            fireCounter = alienFireRate; // Reset the fire counter after shooting
+        } else {
+            fireCounter--; // Decrement the counter each frame
+        }
+    }
+
+    private Block selectRandomAlien() {
+        ArrayList<Block> aliveAliens = new ArrayList<>();
+        for (Block alien : alienArray) {
+            if (alien.alive) {
+                aliveAliens.add(alien);
+            }
+        }
+        if (aliveAliens.size() > 0) {
+            return aliveAliens.get(random.nextInt(aliveAliens.size()));
+        }
+        return null;
+    }
+
+    private void fireAlienBullet(Block alien) {
+        // Fire a bullet from the alien's position
+        Block alienBullet = new Block(
+            alien.x + alien.width / 2 - alienBulletWidth / 2, 
+            alien.y + alien.height, 
+            alienBulletWidth, 
+            alienBulletHeight, 
+            null
+        );
+        alienBulletArray.add(alienBullet);
     }
 
     public void createAliens() {
@@ -279,6 +364,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         repaint();
         if (gameOver) {
             gameLoop.stop();
+            alienBulletArray.clear();
         }
     }
 

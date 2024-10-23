@@ -72,6 +72,9 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
     int score = 0;
     boolean gameOver = false;
 
+    //level
+    int currentLevel = 1;
+
     SpaceInvaders() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -153,6 +156,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         if (gameOver) {
             g.drawString("Game Over: " + String.valueOf(score), 10, 20);
         } else {
+            g.drawString("Level: " + String.valueOf(currentLevel), 10, 20); // Display level
             g.drawString("Score: " + String.valueOf(score), 10, 35);
             if(killCounter < 10){
                 g.drawString("Kills until Ultimate: " + Math.max(0, requiredKills - killCounter), 10, 55);
@@ -234,6 +238,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         // next level
         if (alienCount == 0) {
             score += alienColumns * alienRows * 100;
+            currentLevel++;
             alienColumns = Math.min(alienColumns + 1, columns / 2 - 2);
             alienRows = Math.min(alienRows + 1, rows - 6);
             alienArray.clear();
@@ -302,6 +307,7 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             bulletArray.clear();
             score = 0;
             killCounter = 0;
+            currentLevel = 1;
             isUltimateActive = false;
             alienVelocityX = 1;
             alienColumns = 3;

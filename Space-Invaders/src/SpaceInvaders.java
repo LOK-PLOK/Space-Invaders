@@ -108,13 +108,13 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
         ship = new Block(shipX, shipY, shipWidth, shipHeight, shipImg);
         alienArray = new ArrayList<Block>();
         bulletArray = new ArrayList<Block>();
+        alienBulletArray = new ArrayList<>();
 
         // game timer
         gameLoop = new Timer(1000 / 60, this);
         createAliens();
         gameLoop.start();
 
-        alienBulletArray = new ArrayList<>();
     }
 
     private void createUltimateLaser() {
@@ -173,18 +173,35 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
             g2.drawRect(ultimateLaser.x, ultimateLaser.y, ultimateLaser.width, ultimateLaser.height);
         }
         
-
         g.setColor(Color.white);
-        g.setFont(new Font("Arial", Font.PLAIN, 15));
         if (gameOver) {
-            g.drawString("Game Over: " + String.valueOf(score), 10, 20);
+            g.setFont(new Font("Arial", Font.BOLD, 50));
+            String gameOverText = "GAME OVER";
+            FontMetrics metrics = g.getFontMetrics();
+            int gameOverX = (boardWidth - metrics.stringWidth(gameOverText)) / 2;
+            int gameOverY = boardHeight / 2;
+            g.drawString(gameOverText, gameOverX, gameOverY);
+
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            String scoreText = "Final Score: " + score;
+            metrics = g.getFontMetrics();
+            int scoreX = (boardWidth - metrics.stringWidth(scoreText)) / 2;
+            g.drawString(scoreText, scoreX, gameOverY + 50);
+
+            // play again instructions
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            String restartText = "Press SPACE to play again";
+            metrics = g.getFontMetrics();
+            int restartX = (boardWidth - metrics.stringWidth(restartText)) / 2;
+            g.drawString(restartText, restartX, gameOverY + 100);
         } else {
-            g.drawString("Level: " + String.valueOf(currentLevel), 10, 20); // Display level
+            g.setFont(new Font("Arial", Font.PLAIN, 15));
+            g.drawString("Level: " + String.valueOf(currentLevel), 10, 20);
             g.drawString("Score: " + String.valueOf(score), 10, 35);
             if(killCounter < 10){
-                g.drawString("Kills until Ultimate: " + Math.max(0, requiredKills - killCounter), 10, 55);
+                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 50);
             } else {
-                g.drawString("Ultimate Ready (Press F)", 10, 55);
+                g.drawString("Ultimate Ready (Press F)", 10, 50);
             }
         }
     }
@@ -292,8 +309,6 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
     }
 
-
-
     private void handleAlienShooting() {
         // Shoot only if fireCounter reaches 0
         if (fireCounter <= 0) {
@@ -386,21 +401,23 @@ public class SpaceInvaders extends JPanel implements ActionListener, KeyListener
 
     @Override
     public void keyReleased(KeyEvent e) {
-
         if (gameOver) {
-            ship.x = shipX;
-            alienArray.clear();
-            bulletArray.clear();
-            score = 0;
-            killCounter = 0;
-            currentLevel = 1;
-            isUltimateActive = false;
-            alienVelocityX = 1;
-            alienColumns = 3;
-            alienRows = 2;
-            gameOver = false;
-            createAliens();
-            gameLoop.start();
+            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                ship.x = shipX;
+                alienArray.clear();
+                bulletArray.clear();
+                alienBulletArray.clear();
+                score = 0;
+                killCounter = 0;
+                currentLevel = 1;
+                isUltimateActive = false;
+                alienVelocityX = 1;
+                alienColumns = 3;
+                alienRows = 2;
+                gameOver = false;
+                createAliens();
+                gameLoop.start();
+            }
         }
         else if (e.getKeyCode() == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0) {
             ship.x -= shipVelocityX;

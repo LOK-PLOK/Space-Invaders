@@ -63,7 +63,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     int alienBulletVelocityY = 5;
 
     // Variables to control firing rate
-    int alienFireRate = 180;
+    int alienFireRate = 1;
     int fireCounter = alienFireRate;
     Random random = new Random();
 
@@ -74,12 +74,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         addKeyListener(this);
 
         // Load Images
-        shipImg = new ImageIcon(getClass().getResource("./ship.png")).getImage();
+        shipImg = new ImageIcon(getClass().getResource("./Images/ship.png")).getImage();
         alienImgArray = new ArrayList<>();
-        alienImgArray.add(new ImageIcon(getClass().getResource("./alien.png")).getImage());
-        alienImgArray.add(new ImageIcon(getClass().getResource("./alien-cyan.png")).getImage());
-        alienImgArray.add(new ImageIcon(getClass().getResource("./alien-magenta.png")).getImage());
-        alienImgArray.add(new ImageIcon(getClass().getResource("./alien-yellow.png")).getImage());
+        alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien.png")).getImage());
+        alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-cyan.png")).getImage());
+        alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-magenta.png")).getImage());
+        alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-yellow.png")).getImage());
 
         ship = new Block(shipX, shipY, shipWidth, shipHeight, shipImg);
         alienArray = new ArrayList<>();

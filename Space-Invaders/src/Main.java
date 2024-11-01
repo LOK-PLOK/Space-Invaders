@@ -16,7 +16,7 @@ public class Main {
             gamePanel.requestFocus();
             frame.setVisible(true);
 
-            ImageIcon image = new ImageIcon("src/space-invaders-icon.png");
+            ImageIcon image = new ImageIcon("src/Images/space-invaders-icon.png");
             frame.setIconImage(image.getImage());
         });
     }

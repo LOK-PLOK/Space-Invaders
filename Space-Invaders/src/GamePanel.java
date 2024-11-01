@@ -6,66 +6,66 @@ import javax.swing.*;
 
 public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Board
-    int tileSize = 32;
-    int rows = 16;
-    int columns = 16;
-    int boardWidth = tileSize * columns;
-    int boardHeight = tileSize * rows;
+    private int tileSize = 32;
+    private int rows = 16;
+    private int columns = 16;
+    private int boardWidth = tileSize * columns;
+    private int boardHeight = tileSize * rows;
 
     // Images
-    Image shipImg;
-    ArrayList<Image> alienImgArray;
+    private Image shipImg;
+    private ArrayList<Image> alienImgArray;
 
     // Ship
-    Block ship;
-    int shipWidth = tileSize * 2;
-    int shipHeight = tileSize;
-    int shipX = tileSize * columns / 2 - tileSize;
-    int shipY = boardHeight - tileSize * 2;
-    int shipVelocityX = tileSize / 2;
+    private ShipBlock ship;
+    private int shipWidth = tileSize * 2;
+    private int shipHeight = tileSize;
+    private int shipX = tileSize * columns / 2 - tileSize;
+    private int shipY = boardHeight - tileSize * 2;
+    private int shipVelocityX = tileSize / 2;
 
     // Aliens
-    ArrayList<Block> alienArray;
-    int alienWidth = tileSize * 2;
-    int alienHeight = tileSize;
-    int alienX = tileSize;
-    int alienY = tileSize;
-    int alienRows = 2;
-    int alienColumns = 3;
-    int alienCount = 0;
-    int alienVelocityX = 1;
+    private ArrayList<AlienBlock> alienArray;
+    private int alienWidth = tileSize * 2;
+    private int alienHeight = tileSize;
+    private int alienX = tileSize;
+    private int alienY = tileSize;
+    private int alienRows = 2;
+    private int alienColumns = 3;
+    private int alienCount = 0;
+    private int alienVelocityX = 1;
 
     // Bullets
-    ArrayList<Block> bulletArray;
-    int bulletWidth = tileSize / 8;
-    int bulletHeight = tileSize / 2;
-    int bulletVelocityY = -10;
+    private ArrayList<BulletBlock> bulletArray;
+    private int bulletWidth = tileSize / 8;
+    private int bulletHeight = tileSize / 2;
+    private int bulletVelocityY = -10;
 
     // Ultimate Bar
-    boolean isUltimateActive = false;
-    long ultimateStartTime = 0;
-    final long duration = 2000;
-    final int requiredKills = 10;
-    int killCounter = 0;
-    Block ultimateLaser;
+    private boolean isUltimateActive = false;
+    private long ultimateStartTime = 0;
+    private final long duration = 2000;
+    private final int requiredKills = 10;
+    private int killCounter = 0;
+    private Block ultimateLaser;
 
-    Timer gameLoop;
-    int score = 0;
-    boolean gameOver = false;
+    private Timer gameLoop;
+    private int score = 0;
+    private boolean gameOver = false;
 
     // Level
-    int currentLevel = 1;
+    private int currentLevel = 1;
 
     // Alien Bullets
-    ArrayList<Block> alienBulletArray;
-    int alienBulletWidth = tileSize / 8;
-    int alienBulletHeight = tileSize / 2;
-    int alienBulletVelocityY = 5;
+    private ArrayList<BulletBlock> alienBulletArray;
+    private int alienBulletWidth = tileSize / 8;
+    private int alienBulletHeight = tileSize / 2;
+    private int alienBulletVelocityY = 5;
 
     // Variables to control firing rate
-    int alienFireRate = 180;
-    int fireCounter = alienFireRate;
-    Random random = new Random();
+    private int alienFireRate = 180;
+    private int fireCounter = alienFireRate;
+    private Random random = new Random();
 
     public GamePanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
@@ -81,7 +81,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-magenta.png")).getImage());
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-yellow.png")).getImage());
 
-        ship = new Block(shipX, shipY, shipWidth, shipHeight, shipImg);
+        ship = new ShipBlock(shipX, shipY, shipWidth, shipHeight, shipImg);
         alienArray = new ArrayList<>();
         bulletArray = new ArrayList<>();
         alienBulletArray = new ArrayList<>();
@@ -94,8 +94,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     private void createUltimateLaser() {
         int laserWidth = tileSize * 2;
-        int laserHeight = ship.y;
-        int laserX = ship.x + (ship.width / 2) - (laserWidth / 2);
+        int laserHeight = ship.getY();
+        int laserX = ship.getX() + (ship.getWidth() / 2) - (laserWidth / 2);
         ultimateLaser = new Block(laserX, 0, laserWidth, laserHeight, null);
     }
 
@@ -107,28 +107,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     private void draw(Graphics g) {
         // Draw ship
-        g.drawImage(ship.image, ship.x, ship.y, ship.width, ship.height, null);
+        g.drawImage(ship.getImage(), ship.getX(), ship.getY(), ship.getWidth(), ship.getHeight(), null);
 
         // Draw aliens
-        for (Block alien : alienArray) {
-            if (alien.alive) {
-                g.drawImage(alien.image, alien.x, alien.y, alien.width, alien.height, null);
+        for (AlienBlock alien : alienArray) {
+            if (alien.isAlive()) {
+                g.drawImage(alien.getImage(), alien.getX(), alien.getY(), alien.getWidth(), alien.getHeight(), null);
             }
         }
 
         // Draw bullets
         g.setColor(Color.white);
-        for (Block bullet : bulletArray) {
-            if (!bullet.used) {
-                g.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+        for (BulletBlock bullet : bulletArray) {
+            if (!bullet.isUsed()) {
+                g.fillRect(bullet.getX(), bullet.getY(), bullet.getWidth(), bullet.getHeight());
             }
         }
 
         // Draw alien bullets
         g.setColor(Color.red);
-        for (Block alienBullet : alienBulletArray) {
-            if (!alienBullet.used) {
-                g.fillRect(alienBullet.x, alienBullet.y, alienBullet.width, alienBullet.height);
+        for (BulletBlock alienBullet : alienBulletArray) {
+            if (!alienBullet.isUsed()) {
+                g.fillRect(alienBullet.getX(), alienBullet.getY(), alienBullet.getWidth(), alienBullet.getHeight());
             }
         }
 
@@ -136,10 +136,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if (isUltimateActive && ultimateLaser != null) {
             Graphics2D g2 = (Graphics2D) g;
             g2.setColor(Color.WHITE);
-            g2.fillRect(ultimateLaser.x, ultimateLaser.y, ultimateLaser.width, ultimateLaser.height);
+            g2.fillRect(ultimateLaser.getX(), ultimateLaser.getY(), ultimateLaser.getWidth(), ultimateLaser.getHeight());
             g2.setColor(Color.YELLOW);
             g2.setStroke(new BasicStroke(8));
-            g2.drawRect(ultimateLaser.x, ultimateLaser.y, ultimateLaser.width, ultimateLaser.height);
+            g2.drawRect(ultimateLaser.getX(), ultimateLaser.getY(), ultimateLaser.getWidth(), ultimateLaser.getHeight());
         }
 
         // Draw game over text
@@ -177,14 +177,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     private void move() {
         // Aliens movement and collision detection
-        for (Block alien : alienArray) {
-            if (alien.alive) {
-                alien.x += alienVelocityX;
-                if (alien.x + alien.width >= boardWidth || alien.x <= 0) {
+        for (AlienBlock alien : alienArray) {
+            if (alien.isAlive()) {
+                alien.setX(alien.getX() + alienVelocityX);
+                if (alien.getX() + alien.getWidth() >= boardWidth || alien.getX() <= 0) {
                     alienVelocityX *= -1;
-                    alien.x += alienVelocityX * 2;
-                    for (Block a : alienArray) {
-                        a.y += alienHeight;
+                    alien.setX(alien.getX() + alienVelocityX * 2);
+                    for (AlienBlock a : alienArray) {
+                        a.setY(a.getY() + alienHeight);
                     }
                 }
                 if (detectCollision(alien, ship)) {
@@ -195,10 +195,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
         // Ultimate laser movement and collision detection
         if (isUltimateActive) {
-            ultimateLaser.x = ship.x + (ship.width / 2) - (ultimateLaser.width / 2);
-            for (Block alien : alienArray) {
-                if (alien.alive && detectCollision(ultimateLaser, alien)) {
-                    alien.alive = false;
+            ultimateLaser.setX(ship.getX() + (ship.getWidth() / 2) - (ultimateLaser.getWidth() / 2));
+            for (AlienBlock alien : alienArray) {
+                if (alien.isAlive() && detectCollision(ultimateLaser, alien)) {
+                    alien.setAlive(false);
                     alienCount--;
                     score += 100;
                 }
@@ -210,12 +210,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
 
         // Bullets movement and collision detection
-        for (Block bullet : bulletArray) {
-            bullet.y += bulletVelocityY;
-            for (Block alien : alienArray) {
-                if (!bullet.used && alien.alive && detectCollision(bullet, alien)) {
-                    bullet.used = true;
-                    alien.alive = false;
+        for (BulletBlock bullet : bulletArray) {
+            bullet.setY(bullet.getY() + bulletVelocityY);
+            for (AlienBlock alien : alienArray) {
+                if (!bullet.isUsed() && alien.isAlive() && detectCollision(bullet, alien)) {
+                    bullet.setUsed(true);
+                    alien.setAlive(false);
                     alienCount--;
                     score += 100;
                     killCounter++;
@@ -224,17 +224,17 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
 
         // Ship bullet and alien bullet collision detection
-        for(Block shipBullet : bulletArray){
-            for(Block alienBullet : alienBulletArray){
-                if(!shipBullet.used && !alienBullet.used && detectCollision(shipBullet, alienBullet)){
-                    shipBullet.used = true;
-                    alienBullet.used = true;
+        for (BulletBlock shipBullet : bulletArray) {
+            for (BulletBlock alienBullet : alienBulletArray) {
+                if (!shipBullet.isUsed() && !alienBullet.isUsed() && detectCollision(shipBullet, alienBullet)) {
+                    shipBullet.setUsed(true);
+                    alienBullet.setUsed(true);
                 }
             }
         }
 
         // Clear used bullets
-        bulletArray.removeIf(bullet -> bullet.used || bullet.y < 0);
+        bulletArray.removeIf(bullet -> bullet.isUsed() || bullet.getY() < 0);
 
         // Next level
         if (alienCount == 0) {
@@ -251,20 +251,20 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         handleAlienShooting();
 
         // Alien bullets movement and collision detection
-        for (Block alienBullet : alienBulletArray) {
-            alienBullet.y += alienBulletVelocityY;
-            if (!alienBullet.used && detectCollision(alienBullet, ship)) {
+        for (BulletBlock alienBullet : alienBulletArray) {
+            alienBullet.setY(alienBullet.getY() + alienBulletVelocityY);
+            if (!alienBullet.isUsed() && detectCollision(alienBullet, ship)) {
                 gameOver = true;
             }
         }
 
         // Clear used alien bullets
-        alienBulletArray.removeIf(alienBullet -> alienBullet.y > boardHeight);
+        alienBulletArray.removeIf(alienBullet -> alienBullet.getY() > boardHeight);
     }
 
     private void handleAlienShooting() {
         if (fireCounter <= 0) {
-            Block shooter = selectRandomAlien();
+            AlienBlock shooter = selectRandomAlien();
             if (shooter != null) {
                 fireAlienBullet(shooter);
             }
@@ -274,10 +274,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
     }
 
-    private Block selectRandomAlien() {
-        ArrayList<Block> aliveAliens = new ArrayList<>();
-        for (Block alien : alienArray) {
-            if (alien.alive) {
+    private AlienBlock selectRandomAlien() {
+        ArrayList<AlienBlock> aliveAliens = new ArrayList<>();
+        for (AlienBlock alien : alienArray) {
+            if (alien.isAlive()) {
                 aliveAliens.add(alien);
             }
         }
@@ -287,10 +287,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         return null;
     }
 
-    private void fireAlienBullet(Block alien) {
-        Block alienBullet = new Block(
-            alien.x + alien.width / 2 - alienBulletWidth / 2,
-            alien.y + alien.height,
+    private void fireAlienBullet(AlienBlock alien) {
+        BulletBlock alienBullet = new BulletBlock(
+            alien.getX() + alien.getWidth() / 2 - alienBulletWidth / 2,
+            alien.getY() + alien.getHeight(),
             alienBulletWidth,
             alienBulletHeight,
             null
@@ -303,7 +303,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         for (int r = 0; r < alienRows; r++) {
             for (int c = 0; c < alienColumns; c++) {
                 int randomImgIndex = random.nextInt(alienImgArray.size());
-                Block alien = new Block(
+                AlienBlock alien = new AlienBlock(
                     alienX + c * alienWidth,
                     alienY + r * alienHeight,
                     alienWidth,
@@ -317,10 +317,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     }
 
     private boolean detectCollision(Block a, Block b) {
-        return a.x < b.x + b.width &&
-               a.x + a.width > b.x &&
-               a.y < b.y + b.height &&
-               a.y + a.height > b.y;
+        return a.getX() < b.getX() + b.getWidth() &&
+               a.getX() + a.getWidth() > b.getX() &&
+               a.getY() < b.getY() + b.getHeight() &&
+               a.getY() + a.getHeight() > b.getY();
     }
 
     @Override
@@ -344,10 +344,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             ultimateStartTime = System.currentTimeMillis();
             killCounter = 0;
             createUltimateLaser();
-        } else if (code == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0) {
-            ship.x -= shipVelocityX;
-        } else if (code == KeyEvent.VK_RIGHT && ship.x + ship.width + shipVelocityX <= boardWidth) {
-            ship.x += shipVelocityX;
+        } else if (code == KeyEvent.VK_LEFT && ship.getX() - shipVelocityX >= 0) {
+            ship.setX(ship.getX() - shipVelocityX);
+        } else if (code == KeyEvent.VK_RIGHT && ship.getX() + ship.getWidth() + shipVelocityX <= boardWidth) {
+            ship.setX(ship.getX() + shipVelocityX);
         }
     }
 
@@ -360,14 +360,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
         } else {
             if (code == KeyEvent.VK_SPACE && !isUltimateActive) {
-                Block bullet = new Block(ship.x + shipWidth * 15 / 32, ship.y, bulletWidth, bulletHeight, null);
+                BulletBlock bullet = new BulletBlock(ship.getX() + shipWidth * 15 / 32, ship.getY(), bulletWidth, bulletHeight, null);
                 bulletArray.add(bullet);
             }
         }
     }
 
     private void resetGame() {
-        ship.x = shipX;
+        ship.setX(shipX);
         alienArray.clear();
         bulletArray.clear();
         alienBulletArray.clear();

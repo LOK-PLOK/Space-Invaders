@@ -22,7 +22,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     int shipHeight = tileSize;
     int shipX = tileSize * columns / 2 - tileSize;
     int shipY = boardHeight - tileSize * 2;
-    int shipVelocityX = tileSize;
+    int shipVelocityX = tileSize / 2;
 
     // Aliens
     ArrayList<Block> alienArray;
@@ -63,7 +63,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     int alienBulletVelocityY = 5;
 
     // Variables to control firing rate
-    int alienFireRate = 1;
+    int alienFireRate = 180;
     int fireCounter = alienFireRate;
     Random random = new Random();
 
@@ -223,6 +223,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
         }
 
+        // Ship bullet and alien bullet collision detection
+        for(Block shipBullet : bulletArray){
+            for(Block alienBullet : alienBulletArray){
+                if(!shipBullet.used && !alienBullet.used && detectCollision(shipBullet, alienBullet)){
+                    shipBullet.used = true;
+                    alienBullet.used = true;
+                }
+            }
+        }
+
         // Clear used bullets
         bulletArray.removeIf(bullet -> bullet.used || bullet.y < 0);
 
@@ -334,6 +344,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             ultimateStartTime = System.currentTimeMillis();
             killCounter = 0;
             createUltimateLaser();
+        } else if (code == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0) {
+            ship.x -= shipVelocityX;
+        } else if (code == KeyEvent.VK_RIGHT && ship.x + ship.width + shipVelocityX <= boardWidth) {
+            ship.x += shipVelocityX;
         }
     }
 
@@ -345,11 +359,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 resetGame();
             }
         } else {
-            if (code == KeyEvent.VK_LEFT && ship.x - shipVelocityX >= 0) {
-                ship.x -= shipVelocityX;
-            } else if (code == KeyEvent.VK_RIGHT && ship.x + ship.width + shipVelocityX <= boardWidth) {
-                ship.x += shipVelocityX;
-            } else if (code == KeyEvent.VK_SPACE && !isUltimateActive) {
+            if (code == KeyEvent.VK_SPACE && !isUltimateActive) {
                 Block bullet = new Block(ship.x + shipWidth * 15 / 32, ship.y, bulletWidth, bulletHeight, null);
                 bulletArray.add(bullet);
             }

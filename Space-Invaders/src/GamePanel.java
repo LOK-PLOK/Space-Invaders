@@ -196,6 +196,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         // Ultimate laser movement and collision detection
         if (isUltimateActive) {
             ultimateLaser.setX(ship.getX() + (ship.getWidth() / 2) - (ultimateLaser.getWidth() / 2));
+            
+            // Collision detection between ultimate laser and aliens
             for (AlienBlock alien : alienArray) {
                 if (alien.isAlive() && detectCollision(ultimateLaser, alien)) {
                     alien.setAlive(false);
@@ -203,6 +205,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     score += 100;
                 }
             }
+            
+            // Collision detection between ultimate laser and alien bullets
+            for (BulletBlock alienBullet : alienBulletArray) {
+                if (!alienBullet.isUsed() && detectCollision(ultimateLaser, alienBullet)) {
+                    alienBullet.setUsed(true);
+                }
+            }
+            
             if (System.currentTimeMillis() - ultimateStartTime >= duration) {
                 isUltimateActive = false;
                 ultimateLaser = null;
@@ -240,11 +250,27 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if (alienCount == 0) {
             score += alienColumns * alienRows * 100;
             currentLevel++;
-            alienColumns = Math.min(alienColumns + 1, columns / 2 - 2);
-            alienRows = Math.min(alienRows + 1, rows - 6);
+            
+            // Reset alien array when reaching a multiple of 10 + 1 level
+            if ((currentLevel - 1) % 10 == 0) {
+                alienColumns = 3;
+                alienRows = 2;
+            } else {
+                alienColumns = Math.min(alienColumns + 1, columns / 2 - 2);
+                alienRows = Math.min(alienRows + 1, rows - 6);
+            }
+            
             alienArray.clear();
             bulletArray.clear();
             createAliens();
+
+            // Adjust alien fire rate based on level
+            if (currentLevel > 1 && (currentLevel - 1) % 10 == 0 && alienFireRate > 60) {
+                alienFireRate -= 60;
+            } else if(alienFireRate <= 60 && alienFireRate > 10) {
+                // Max firerate of alien is 10
+                alienFireRate -= 10;
+            }
         }
 
         // Alien shooting

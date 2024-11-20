@@ -23,6 +23,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int shipX = tileSize * columns / 2 - tileSize;
     private int shipY = boardHeight - tileSize * 2;
     private int shipVelocityX = tileSize / 2;
+    private int lives = 3;
 
     // Aliens
     private ArrayList<AlienBlock> alienArray;
@@ -167,10 +168,11 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g.setFont(new Font("Arial", Font.PLAIN, 15));
             g.drawString("Level: " + currentLevel, 10, 20);
             g.drawString("Score: " + score, 10, 35);
+            g.drawString("Lives: " + lives, 10, 50);
             if (killCounter < 10) {
-                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 50);
+                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 65);
             } else {
-                g.drawString("Ultimate Ready (Press F)", 10, 50);
+                g.drawString("Ultimate Ready (Press F)", 10, 65);
             }
         }
     }
@@ -280,7 +282,11 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         for (BulletBlock alienBullet : alienBulletArray) {
             alienBullet.setY(alienBullet.getY() + alienBulletVelocityY);
             if (!alienBullet.isUsed() && detectCollision(alienBullet, ship)) {
-                gameOver = true;
+                alienBullet.setUsed(true);
+                lives = lives - 1;
+                if(lives == 0){
+                    gameOver = true;
+                }
             }
         }
 
@@ -399,6 +405,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienBulletArray.clear();
         score = 0;
         killCounter = 0;
+        lives = 3;
         currentLevel = 1;
         isUltimateActive = false;
         alienVelocityX = 1;

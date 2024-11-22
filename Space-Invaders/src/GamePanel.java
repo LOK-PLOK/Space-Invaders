@@ -57,6 +57,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Level
     private int currentLevel = 1;
 
+    // PowerUps
+    private ArrayList<PowerUp> powerUps;
+
     // Alien Bullets
     private ArrayList<BulletBlock> alienBulletArray;
     private int alienBulletWidth = tileSize / 8;
@@ -86,6 +89,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienArray = new ArrayList<>();
         bulletArray = new ArrayList<>();
         alienBulletArray = new ArrayList<>();
+        powerUps = new ArrayList<>();
 
         // Game timer
         gameLoop = new Timer(1000 / 60, this);
@@ -141,6 +145,29 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g2.setColor(Color.YELLOW);
             g2.setStroke(new BasicStroke(8));
             g2.drawRect(ultimateLaser.getX(), ultimateLaser.getY(), ultimateLaser.getWidth(), ultimateLaser.getHeight());
+        }
+
+        // Draw powerups
+        for(PowerUp powerUp : powerUps){
+            if(!powerUp.isTaken()){
+                Graphics2D g2 = (Graphics2D) g;
+                Color powerUpColor = (powerUp.getType() == 1) ? Color.PINK : Color.YELLOW;
+                g2.setColor(powerUpColor);
+                g2.fillRect((int) (powerUp.getx() - powerUp.getr()), 
+                            (int) (powerUp.gety() - powerUp.getr()), 
+                            (int) (2 * powerUp.getr()), 
+                            (int) (2 * powerUp.getr()));
+
+                g2.setColor(powerUpColor.darker());
+                g2.setStroke(new BasicStroke(2));
+
+                g2.drawRect((int) (powerUp.getx() - powerUp.getr()), 
+                            (int) (powerUp.gety() - powerUp.getr()), 
+                            (int) (2 * powerUp.getr()), 
+                            (int) (2 * powerUp.getr()));
+                
+                g2.setStroke(new BasicStroke(2));
+            }
         }
 
         // Draw game over text
@@ -205,6 +232,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     alien.setAlive(false);
                     alienCount--;
                     score += 100;
+                    
+                    // Drop powerup
+                    double rand = Math.random();
+                    if(rand < 0.001){
+                        powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
+                    } else if(rand < 1) {
+                        powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
+                    }
                 }
             }
             
@@ -231,7 +266,43 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     alienCount--;
                     score += 100;
                     killCounter++;
+
+                    // Drop powerup
+                    double rand = Math.random();
+                    if(rand < 1){
+                        powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
+                    } else if(rand < 0.001) {
+                        powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
+                    }
                 }
+            }
+        }
+
+        // PowerUp Update
+        for (int i = powerUps.size() - 1; i >= 0; i--) {
+            PowerUp powerUp = powerUps.get(i);
+
+            if (!powerUp.isTaken()) {
+                double dx = ship.getX() - powerUp.getx();
+                double dy = ship.getY() - powerUp.gety();
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < ship.getWidth() / 2 + powerUp.getr()) {
+                    powerUp.setTaken(true);
+
+                    if (powerUp.getType() == 1) {
+                        // Extra life
+                        addLife();
+                    } else if (powerUp.getType() == 2) {
+                        // Extra damage
+                        addDamage();
+                    }
+                }
+            }
+
+            // Remove power-ups if taken or off-screen
+            if (powerUp.isTaken() || powerUp.update()) {
+                powerUps.remove(i);
             }
         }
 
@@ -292,6 +363,18 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
         // Clear used alien bullets
         alienBulletArray.removeIf(alienBullet -> alienBullet.getY() > boardHeight);
+    }
+
+    // Add life
+    private void addLife(){
+        if(lives < 5){
+            lives++;
+        }
+    }
+
+    // Boost damage
+    private void addDamage(){
+        // Does nothing for now
     }
 
     private void handleAlienShooting() {

@@ -71,6 +71,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int fireCounter = alienFireRate;
     private Random random = new Random();
 
+    // Pause
+    private boolean isPaused = false;
+
     public GamePanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -172,7 +175,21 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
         // Draw game over text
         g.setColor(Color.white);
-        if (gameOver) {
+        if(isPaused){
+            g.setFont(new Font("Arial", Font.BOLD, 50));
+            String pauseText = "PAUSED";
+            FontMetrics metrics = g.getFontMetrics();
+            int pauseX = (boardWidth - metrics.stringWidth(pauseText)) / 2;
+            int pauseY = boardHeight / 2;
+            g.drawString(pauseText, pauseX, pauseY);
+
+            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            String playAgainText = "Press ANY key to play again";
+            metrics = g.getFontMetrics();
+            int playAgainX = (boardWidth - metrics.stringWidth(playAgainText)) / 2;
+            g.drawString(playAgainText, playAgainX, pauseY + 50);
+
+        } else if (gameOver) {
             g.setFont(new Font("Arial", Font.BOLD, 50));
             String gameOverText = "GAME OVER";
             FontMetrics metrics = g.getFontMetrics();
@@ -440,11 +457,13 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        move();
-        repaint();
-        if (gameOver) {
-            gameLoop.stop();
-            alienBulletArray.clear();
+        if(!isPaused){
+            move();
+            repaint();
+            if (gameOver) {
+                gameLoop.stop();
+                alienBulletArray.clear();
+            }
         }
     }
 
@@ -453,7 +472,22 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if(isPaused){
+            isPaused = false;
+            gameLoop.start();
+            repaint();
+            return;
+        }
+
         int code = e.getKeyCode();
+
+        if(code == KeyEvent.VK_P){
+            isPaused = true;
+            gameLoop.stop();
+            repaint();
+            return;
+        }
+
         if (code == KeyEvent.VK_F && !isUltimateActive && killCounter >= requiredKills) {
             isUltimateActive = true;
             ultimateStartTime = System.currentTimeMillis();

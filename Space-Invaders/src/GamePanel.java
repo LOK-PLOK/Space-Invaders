@@ -300,7 +300,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     double rand = Math.random();
                     if(rand < 0.001){
                         powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
-                    } else if(rand < 1) {
+                    } else if(rand < 0.01) {
                         powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
                     }
                 }
@@ -332,9 +332,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
                     // Drop powerup
                     double rand = Math.random();
-                    if(rand < 1){
+                    if(rand < 0.001){
                         powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
-                    } else if(rand < 0.001) {
+                    } else if(rand < 0.01) {
                         powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
                     }
                 }

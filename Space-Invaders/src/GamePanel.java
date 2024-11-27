@@ -73,7 +73,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     // Pause
     private boolean isPaused = false;
-
+    
     public GamePanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -430,7 +430,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     // Add life
     private void addLife(){
-        if(lives < 10){
+        if(lives < 5){
             lives++;
         }
     }
@@ -522,6 +522,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             move();
             repaint();
             if (gameOver) {
+                HighScoreManager.setHighScore(score);
                 gameLoop.stop();
                 alienBulletArray.clear();
             }

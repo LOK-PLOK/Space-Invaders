@@ -178,62 +178,82 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if(isPaused){
             Graphics2D g2 = (Graphics2D) g;
     
-            // Create a semi-transparent gray overlay in the center of the screen
             Composite originalComposite = g2.getComposite();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             
             // Calculate overlay dimensions and position
-            int overlayWidth = boardWidth - 100;  // Reduce width by 50 pixels on each side
-            int overlayHeight = 200;  // Increase height
-            int overlayX = 50;  // Start 50 pixels from the left
-            int overlayY = (boardHeight - overlayHeight) / 2;  // Center vertically
+            int overlayWidth = boardWidth - 100;
+            int overlayHeight = 250;
+            int overlayX = 50;
+            int overlayY = (boardHeight - overlayHeight) / 2;
             
             g2.setColor(Color.DARK_GRAY);
             g2.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
             
             g2.setComposite(originalComposite);
         
-            // Set text color and font
             g2.setColor(Color.WHITE);
-            g2.setFont(new Font("Arial", Font.BOLD, 50));
             
-            // Pause text
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
             String pauseText = "PAUSED";
             FontMetrics metrics = g2.getFontMetrics();
             int pauseX = (boardWidth - metrics.stringWidth(pauseText)) / 2;
-            g2.drawString(pauseText, pauseX, overlayY + 80);
+            g2.drawString(pauseText, pauseX, overlayY + 100);
         
             g2.setFont(new Font("Arial", Font.PLAIN, 20));
             String resumeText = "Press P to Resume";
             metrics = g.getFontMetrics();
             int resumeX = (boardWidth - metrics.stringWidth(resumeText)) / 2;
-            g2.drawString(resumeText, resumeX, overlayY + 120);
+            g2.drawString(resumeText, resumeX, overlayY + 150);
             
             g2.setFont(new Font("Arial", Font.PLAIN, 20));
             String homeText = "Press H for Home Screen";
             metrics = g.getFontMetrics();
             int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
-            g2.drawString(homeText, homeX, overlayY + 150);
+            g2.drawString(homeText, homeX, overlayY + 200);
 
         } else if (gameOver) {
-            g.setFont(new Font("Arial", Font.BOLD, 50));
+            Graphics2D g2 = (Graphics2D) g;
+    
+            Composite originalComposite = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            
+            // Calculate overlay dimensions and position
+            int overlayWidth = boardWidth - 100;
+            int overlayHeight = 300;
+            int overlayX = 50;
+            int overlayY = (boardHeight - overlayHeight) / 2;
+            
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
+            
+            g2.setComposite(originalComposite);
+
+            g2.setColor(Color.WHITE);
+            
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
             String gameOverText = "GAME OVER";
             FontMetrics metrics = g.getFontMetrics();
             int gameOverX = (boardWidth - metrics.stringWidth(gameOverText)) / 2;
-            int gameOverY = boardHeight / 2;
-            g.drawString(gameOverText, gameOverX, gameOverY);
+            g2.drawString(gameOverText, gameOverX, overlayY + 100);
 
-            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g2.setFont(new Font("Arial", Font.BOLD, 30));
             String scoreText = "Final Score: " + score;
             metrics = g.getFontMetrics();
             int scoreX = (boardWidth - metrics.stringWidth(scoreText)) / 2;
-            g.drawString(scoreText, scoreX, gameOverY + 50);
+            g2.drawString(scoreText, scoreX, overlayY + 150);
 
-            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
             String restartText = "Press SPACE to play again";
             metrics = g.getFontMetrics();
             int restartX = (boardWidth - metrics.stringWidth(restartText)) / 2;
-            g.drawString(restartText, restartX, gameOverY + 100);
+            g2.drawString(restartText, restartX, overlayY + 200);
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String homeText = "Press H for Home Screen";
+            metrics = g.getFontMetrics();
+            int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
+            g2.drawString(homeText, homeX, overlayY + 250);
         } else {
             g.setFont(new Font("Arial", Font.PLAIN, 15));
             g.drawString("Level: " + currentLevel, 10, 20);
@@ -498,7 +518,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Add a check to ensure we're not doing anything when paused
         if(!isPaused){
             move();
             repaint();
@@ -522,10 +541,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             
             if (isPaused) {
                 gameLoop.stop();
-                System.out.println("Game paused");
             } else {
                 gameLoop.start();
-                System.out.println("Game resumed");
             }
             repaint();
             return;
@@ -557,6 +574,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if (gameOver) {
             if (code == KeyEvent.VK_SPACE) {
                 resetGame();
+            } else if (code == KeyEvent.VK_H){
+                goToHomeScreen();
+                return;
             }
         } else {
             if (code == KeyEvent.VK_SPACE && !isUltimateActive) {

@@ -10,10 +10,10 @@ public class Main {
             frame.setLocationRelativeTo(null);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            GamePanel gamePanel = new GamePanel();
-            frame.add(gamePanel);
+            // Start with menu
+            MenuPanel menuPanel = new MenuPanel(frame);
+            frame.add(menuPanel);
             frame.pack();
-            gamePanel.requestFocus();
             frame.setVisible(true);
 
             ImageIcon image = new ImageIcon("src/Images/space-invaders-icon.png");

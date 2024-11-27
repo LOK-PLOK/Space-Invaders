@@ -36,6 +36,18 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int alienCount = 0;
     private int alienVelocityX = 1;
 
+    // Boss
+    private Image bossImg;
+    private Boss boss;
+    private boolean isBossLevel;
+    private final int BOSS_WIDTH = tileSize * 9;
+    private final int BOSS_HEIGHT = tileSize * 8;
+    private int bossVelocityX = 2;
+    private int bossFireRate = 45; // Twice as fast (from 90 to 45)
+    private int bossFireCounter = bossFireRate;
+    private int bossPatternCounter = 0;
+    private final int PATTERNS = 3;
+
     // Bullets
     private ArrayList<BulletBlock> bulletArray;
     private int bulletWidth = tileSize / 8;
@@ -81,6 +93,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-cyan.png")).getImage());
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-magenta.png")).getImage());
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien-yellow.png")).getImage());
+        bossImg = new ImageIcon(getClass().getResource("./Images/gun-alien-boss.gif")).getImage();
 
         ship = new ShipBlock(shipX, shipY, shipWidth, shipHeight, shipImg);
         alienArray = new ArrayList<>();
@@ -91,6 +104,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         gameLoop = new Timer(1000 / 60, this);
         createAliens();
         gameLoop.start();
+    }
+
+    private void createBoss() {
+        int bossX = (boardWidth - BOSS_WIDTH) / 2;
+        int bossY = tileSize;
+        boss = new Boss(bossX, bossY, BOSS_WIDTH, BOSS_HEIGHT, bossImg);
+        boss.setHealth(150);
+        bossVelocityX = 2;
+        isBossLevel = true;
+        alienCount = 1;
     }
 
     private void createUltimateLaser() {
@@ -141,6 +164,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g2.setColor(Color.YELLOW);
             g2.setStroke(new BasicStroke(8));
             g2.drawRect(ultimateLaser.getX(), ultimateLaser.getY(), ultimateLaser.getWidth(), ultimateLaser.getHeight());
+        }
+
+        if (isBossLevel && boss != null) {
+            g.drawImage(boss.getImage(), boss.getX(), boss.getY(),
+                    boss.getWidth(), boss.getHeight(), null);
+            g.drawString("Boss Health: " + boss.getHealth(), 10, 80);
         }
 
         // Draw game over text
@@ -195,6 +224,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
         }
 
+        if (isBossLevel && boss != null) {
+            boss.setX(boss.getX() + bossVelocityX);
+
+            // Reverse direction at screen edges
+            if (boss.getX() + boss.getWidth() >= boardWidth || boss.getX() <= 0) {
+                bossVelocityX *= -1;
+                boss.setX(boss.getX() + bossVelocityX); // Prevent sticking at edges
+            }
+        }
+
         // Ultimate laser movement and collision detection
         if (isUltimateActive) {
             ultimateLaser.setX(ship.getX() + (ship.getWidth() / 2) - (ultimateLaser.getWidth() / 2));
@@ -212,6 +251,13 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             for (BulletBlock alienBullet : alienBulletArray) {
                 if (!alienBullet.isUsed() && detectCollision(ultimateLaser, alienBullet)) {
                     alienBullet.setUsed(true);
+                }
+            }
+
+            if (isBossLevel && boss != null && detectCollision(ultimateLaser, boss)) {
+                boss.setHealth(boss.getHealth() - 1); // Ultimate does 1 damage per frame
+                if (boss.getHealth() <= 0) {
+                    alienCount = 0;
                 }
             }
             
@@ -233,6 +279,14 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     killCounter++;
                 }
             }
+
+            if (!bullet.isUsed() && isBossLevel && boss != null && detectBossCollision(bullet, boss)) {
+                bullet.setUsed(true);
+                boss.setHealth(boss.getHealth() - 4); // Each bullet does 10 damage
+                if (boss.getHealth() <= 0) {
+                    alienCount = 0; // Triggers level completion
+                }
+            }
         }
 
         // Ship bullet and alien bullet collision detection
@@ -249,34 +303,57 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         bulletArray.removeIf(bullet -> bullet.isUsed() || bullet.getY() < 0);
 
         // Next level
+        // In move() method:
         if (alienCount == 0) {
-            score += alienColumns * alienRows * 100;
-            currentLevel++;
-            
-            // Reset alien array when reaching a multiple of 10 + 1 level
-            if ((currentLevel - 1) % 10 == 0) {
+            if (!isBossLevel) {
+                // Regular level completed
+                score += alienColumns * alienRows * 100;
+                currentLevel++;
+
+                if (currentLevel % 2 == 0) {  // Boss level transition
+                    alienArray.clear();
+                    bulletArray.clear();
+                    alienBulletArray.clear();
+                    createBoss();
+                } else {
+                    // Regular level transition
+                    if ((currentLevel - 1) % 5 == 0) {  // After boss level
+                        alienColumns = 3;
+                        alienRows = 2;
+                    } else {
+                        alienColumns = Math.min(alienColumns + 1, columns / 2 - 2);
+                        alienRows = Math.min(alienRows + 1, rows - 6);
+                    }
+
+                    alienArray.clear();
+                    bulletArray.clear();
+                    createAliens();
+
+                    // Adjust alien fire rate
+                    if (currentLevel > 1 && (currentLevel - 1) % 10 == 0 && alienFireRate > 60) {
+                        alienFireRate -= 60;
+                    } else if (alienFireRate <= 60 && alienFireRate > 10) {
+                        alienFireRate -= 10;
+                    }
+                }
+            } else if (boss != null && boss.getHealth() <= 0) {
+                // Boss defeated
+                isBossLevel = false;
+                boss = null;
+                score += 1000;  // Bonus score for defeating boss
+                currentLevel++;
+
+                // Setup next regular level
                 alienColumns = 3;
                 alienRows = 2;
-            } else {
-                alienColumns = Math.min(alienColumns + 1, columns / 2 - 2);
-                alienRows = Math.min(alienRows + 1, rows - 6);
-            }
-            
-            alienArray.clear();
-            bulletArray.clear();
-            createAliens();
-
-            // Adjust alien fire rate based on level
-            if (currentLevel > 1 && (currentLevel - 1) % 10 == 0 && alienFireRate > 60) {
-                alienFireRate -= 60;
-            } else if(alienFireRate <= 60 && alienFireRate > 10) {
-                // Max firerate of alien is 10
-                alienFireRate -= 10;
+                createAliens();
             }
         }
 
         // Alien shooting
         handleAlienShooting();
+
+        handleBossShooting();
 
         // Alien bullets movement and collision detection
         for (BulletBlock alienBullet : alienBulletArray) {
@@ -303,6 +380,64 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             fireCounter = alienFireRate;
         } else {
             fireCounter--;
+        }
+    }
+
+    private void handleBossShooting() {
+        if (!isBossLevel || boss == null) return;
+
+        if (bossFireCounter <= 0) {
+            switch (bossPatternCounter) {
+                case 0: // Triple spread
+                    for (int i = -1; i <= 1; i++) {
+                        BulletBlock bossBullet = new BulletBlock(
+                                boss.getX() + boss.getWidth()/2 - alienBulletWidth/2 + (i * 20),
+                                boss.getY() + boss.getHeight(),
+                                alienBulletWidth,
+                                alienBulletHeight,
+                                null
+                        );
+                        alienBulletArray.add(bossBullet);
+                    }
+                    break;
+
+                case 1: // Five bullet spread
+                    for (int i = -2; i <= 2; i++) {
+                        BulletBlock bossBullet = new BulletBlock(
+                                boss.getX() + boss.getWidth()/2 - alienBulletWidth/2 + (i * 15),
+                                boss.getY() + boss.getHeight(),
+                                alienBulletWidth,
+                                alienBulletHeight,
+                                null
+                        );
+                        alienBulletArray.add(bossBullet);
+                    }
+                    break;
+
+                case 2: // Side shots
+                    BulletBlock leftBullet = new BulletBlock(
+                            boss.getX(),
+                            boss.getY() + boss.getHeight()/2,
+                            alienBulletWidth,
+                            alienBulletHeight,
+                            null
+                    );
+                    BulletBlock rightBullet = new BulletBlock(
+                            boss.getX() + boss.getWidth() - alienBulletWidth,
+                            boss.getY() + boss.getHeight()/2,
+                            alienBulletWidth,
+                            alienBulletHeight,
+                            null
+                    );
+                    alienBulletArray.add(leftBullet);
+                    alienBulletArray.add(rightBullet);
+                    break;
+            }
+
+            bossPatternCounter = (bossPatternCounter + 1) % PATTERNS;
+            bossFireCounter = bossFireRate;
+        } else {
+            bossFireCounter--;
         }
     }
 
@@ -353,6 +488,17 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                a.getX() + a.getWidth() > b.getX() &&
                a.getY() < b.getY() + b.getHeight() &&
                a.getY() + a.getHeight() > b.getY();
+    }
+
+    private boolean detectBossCollision(Block bullet, Boss boss) {
+        // Add margins to create a tighter hit box
+        int marginX = tileSize; // Horizontal margin
+        int marginY = tileSize; // Vertical margin
+
+        return bullet.getX() < (boss.getX() + boss.getWidth() - marginX) &&
+                (bullet.getX() + bullet.getWidth()) > (boss.getX() + marginX) &&
+                bullet.getY() < (boss.getY() + boss.getHeight() - marginY) &&
+                (bullet.getY() + bullet.getHeight()) > (boss.getY() + marginY);
     }
 
     @Override
@@ -408,6 +554,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         lives = 3;
         currentLevel = 1;
         isUltimateActive = false;
+        isBossLevel = false;
+        boss = null;
+        bossFireCounter = bossFireRate;
+        bossVelocityX = 2;
         alienVelocityX = 1;
         alienColumns = 3;
         alienRows = 2;

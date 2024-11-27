@@ -176,18 +176,44 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         // Draw game over text
         g.setColor(Color.white);
         if(isPaused){
-            g.setFont(new Font("Arial", Font.BOLD, 50));
+            Graphics2D g2 = (Graphics2D) g;
+    
+            // Create a semi-transparent gray overlay in the center of the screen
+            Composite originalComposite = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            
+            // Calculate overlay dimensions and position
+            int overlayWidth = boardWidth - 100;  // Reduce width by 50 pixels on each side
+            int overlayHeight = 200;  // Increase height
+            int overlayX = 50;  // Start 50 pixels from the left
+            int overlayY = (boardHeight - overlayHeight) / 2;  // Center vertically
+            
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
+            
+            g2.setComposite(originalComposite);
+        
+            // Set text color and font
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
+            
+            // Pause text
             String pauseText = "PAUSED";
-            FontMetrics metrics = g.getFontMetrics();
+            FontMetrics metrics = g2.getFontMetrics();
             int pauseX = (boardWidth - metrics.stringWidth(pauseText)) / 2;
-            int pauseY = boardHeight / 2;
-            g.drawString(pauseText, pauseX, pauseY);
-
-            g.setFont(new Font("Arial", Font.PLAIN, 20));
-            String playAgainText = "Press ANY key to play again";
+            g2.drawString(pauseText, pauseX, overlayY + 80);
+        
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String resumeText = "Press P to Resume";
             metrics = g.getFontMetrics();
-            int playAgainX = (boardWidth - metrics.stringWidth(playAgainText)) / 2;
-            g.drawString(playAgainText, playAgainX, pauseY + 50);
+            int resumeX = (boardWidth - metrics.stringWidth(resumeText)) / 2;
+            g2.drawString(resumeText, resumeX, overlayY + 120);
+            
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String homeText = "Press H for Home Screen";
+            metrics = g.getFontMetrics();
+            int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
+            g2.drawString(homeText, homeX, overlayY + 150);
 
         } else if (gameOver) {
             g.setFont(new Font("Arial", Font.BOLD, 50));
@@ -384,7 +410,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     // Add life
     private void addLife(){
-        if(lives < 5){
+        if(lives < 10){
             lives++;
         }
     }
@@ -455,8 +481,24 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                a.getY() + a.getHeight() > b.getY();
     }
 
+    private void goToHomeScreen(){
+        gameLoop.stop();
+
+        JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        mainFrame.getContentPane().removeAll();
+
+        MenuPanel menuPanel = new MenuPanel(mainFrame);
+        mainFrame.add(menuPanel);
+
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Add a check to ensure we're not doing anything when paused
         if(!isPaused){
             move();
             repaint();
@@ -472,19 +514,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if(isPaused){
-            isPaused = false;
-            gameLoop.start();
+        int code = e.getKeyCode();
+
+        // Add explicit pause toggling
+        if (code == KeyEvent.VK_P) {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                gameLoop.stop();
+                System.out.println("Game paused");
+            } else {
+                gameLoop.start();
+                System.out.println("Game resumed");
+            }
             repaint();
             return;
         }
-
-        int code = e.getKeyCode();
-
-        if(code == KeyEvent.VK_P){
-            isPaused = true;
-            gameLoop.stop();
-            repaint();
+    
+        if(isPaused){
+            if(code == KeyEvent.VK_H){
+                goToHomeScreen();
+                return;
+            }
             return;
         }
 

@@ -24,6 +24,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int shipY = boardHeight - tileSize * 2;
     private int shipVelocityX = tileSize / 2;
     private int lives = 3;
+    private double damage = 1;
+    private int damagePowerupCounter = 0;
 
     // Aliens
     private ArrayList<AlienBlock> alienArray;
@@ -259,10 +261,11 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g.drawString("Level: " + currentLevel, 10, 20);
             g.drawString("Score: " + score, 10, 35);
             g.drawString("Lives: " + lives, 10, 50);
+            g.drawString("Damage: " + damage, 10, 65);
             if (killCounter < 10) {
-                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 65);
+                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 80);
             } else {
-                g.drawString("Ultimate Ready (Press F)", 10, 65);
+                g.drawString("Ultimate Ready (Press F)", 10, 80);
             }
         }
     }
@@ -297,12 +300,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     score += 100;
                     
                     // Drop powerup
-                    double rand = Math.random();
-                    if(rand < 0.001){
-                        powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
-                    } else if(rand < 0.01) {
-                        powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
-                    }
+                    assignPowerUp(alien.getX(), alien.getY());
                 }
             }
             
@@ -331,12 +329,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     killCounter++;
 
                     // Drop powerup
-                    double rand = Math.random();
-                    if(rand < 0.001){
-                        powerUps.add(new PowerUp(1, alien.getX(), alien.getY()));
-                    } else if(rand < 0.01) {
-                        powerUps.add(new PowerUp(2, alien.getX(), alien.getY()));
-                    }
+                    assignPowerUp(alien.getX(), alien.getY());
                 }
             }
         }
@@ -428,6 +421,16 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienBulletArray.removeIf(alienBullet -> alienBullet.getY() > boardHeight);
     }
 
+
+    private void assignPowerUp(int x, int y){
+        double rand = Math.random();
+        if(rand < 0.001){
+            powerUps.add(new PowerUp(1, x, y));
+        } else if(rand < 0.1) {
+            powerUps.add(new PowerUp(2,x, y));
+        }
+    }
+
     // Add life
     private void addLife(){
         if(lives < 5){
@@ -437,7 +440,12 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     // Boost damage
     private void addDamage(){
-        // Does nothing for now
+        if(damagePowerupCounter < 10){
+            damagePowerupCounter++;
+        } else {
+            damagePowerupCounter = 0;
+            damage += 0.5;
+        }
     }
 
     private void handleAlienShooting() {

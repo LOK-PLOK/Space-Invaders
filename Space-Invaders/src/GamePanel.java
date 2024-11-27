@@ -24,6 +24,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int shipY = boardHeight - tileSize * 2;
     private int shipVelocityX = tileSize / 2;
     private int lives = 3;
+    private double damage = 1;
+    private int damagePowerupCounter = 0;
 
     // Aliens
     private ArrayList<AlienBlock> alienArray;
@@ -69,6 +71,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Level
     private int currentLevel = 1;
 
+    // PowerUps
+    private ArrayList<PowerUp> powerUps;
+
     // Alien Bullets
     private ArrayList<BulletBlock> alienBulletArray;
     private int alienBulletWidth = tileSize / 8;
@@ -80,6 +85,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int fireCounter = alienFireRate;
     private Random random = new Random();
 
+    // Pause
+    private boolean isPaused = false;
+    
     public GamePanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -99,6 +107,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         alienArray = new ArrayList<>();
         bulletArray = new ArrayList<>();
         alienBulletArray = new ArrayList<>();
+        powerUps = new ArrayList<>();
 
         // Game timer
         gameLoop = new Timer(1000 / 60, this);
@@ -166,42 +175,127 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             g2.drawRect(ultimateLaser.getX(), ultimateLaser.getY(), ultimateLaser.getWidth(), ultimateLaser.getHeight());
         }
 
+
         if (isBossLevel && boss != null) {
             g.drawImage(boss.getImage(), boss.getX(), boss.getY(),
                     boss.getWidth(), boss.getHeight(), null);
             g.drawString("Boss Health: " + boss.getHealth(), 10, 80);
+
+        // Draw powerups
+        for(PowerUp powerUp : powerUps){
+            if(!powerUp.isTaken()){
+                Graphics2D g2 = (Graphics2D) g;
+                Color powerUpColor = (powerUp.getType() == 1) ? Color.PINK : Color.YELLOW;
+                g2.setColor(powerUpColor);
+                g2.fillRect((int) (powerUp.getx() - powerUp.getr()), 
+                            (int) (powerUp.gety() - powerUp.getr()), 
+                            (int) (2 * powerUp.getr()), 
+                            (int) (2 * powerUp.getr()));
+
+                g2.setColor(powerUpColor.darker());
+                g2.setStroke(new BasicStroke(2));
+
+                g2.drawRect((int) (powerUp.getx() - powerUp.getr()), 
+                            (int) (powerUp.gety() - powerUp.getr()), 
+                            (int) (2 * powerUp.getr()), 
+                            (int) (2 * powerUp.getr()));
+                
+                g2.setStroke(new BasicStroke(2));
+            }
+
         }
 
         // Draw game over text
         g.setColor(Color.white);
-        if (gameOver) {
-            g.setFont(new Font("Arial", Font.BOLD, 50));
+        if(isPaused){
+            Graphics2D g2 = (Graphics2D) g;
+    
+            Composite originalComposite = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            
+            // Calculate overlay dimensions and position
+            int overlayWidth = boardWidth - 100;
+            int overlayHeight = 250;
+            int overlayX = 50;
+            int overlayY = (boardHeight - overlayHeight) / 2;
+            
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
+            
+            g2.setComposite(originalComposite);
+        
+            g2.setColor(Color.WHITE);
+            
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
+            String pauseText = "PAUSED";
+            FontMetrics metrics = g2.getFontMetrics();
+            int pauseX = (boardWidth - metrics.stringWidth(pauseText)) / 2;
+            g2.drawString(pauseText, pauseX, overlayY + 100);
+        
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String resumeText = "Press P to Resume";
+            metrics = g.getFontMetrics();
+            int resumeX = (boardWidth - metrics.stringWidth(resumeText)) / 2;
+            g2.drawString(resumeText, resumeX, overlayY + 150);
+            
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String homeText = "Press H for Home Screen";
+            metrics = g.getFontMetrics();
+            int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
+            g2.drawString(homeText, homeX, overlayY + 200);
+
+        } else if (gameOver) {
+            Graphics2D g2 = (Graphics2D) g;
+    
+            Composite originalComposite = g2.getComposite();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            
+            // Calculate overlay dimensions and position
+            int overlayWidth = boardWidth - 100;
+            int overlayHeight = 300;
+            int overlayX = 50;
+            int overlayY = (boardHeight - overlayHeight) / 2;
+            
+            g2.setColor(Color.DARK_GRAY);
+            g2.fillRect(overlayX, overlayY, overlayWidth, overlayHeight);
+            
+            g2.setComposite(originalComposite);
+
+            g2.setColor(Color.WHITE);
+            
+            g2.setFont(new Font("Arial", Font.BOLD, 50));
             String gameOverText = "GAME OVER";
             FontMetrics metrics = g.getFontMetrics();
             int gameOverX = (boardWidth - metrics.stringWidth(gameOverText)) / 2;
-            int gameOverY = boardHeight / 2;
-            g.drawString(gameOverText, gameOverX, gameOverY);
+            g2.drawString(gameOverText, gameOverX, overlayY + 100);
 
-            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g2.setFont(new Font("Arial", Font.BOLD, 30));
             String scoreText = "Final Score: " + score;
             metrics = g.getFontMetrics();
             int scoreX = (boardWidth - metrics.stringWidth(scoreText)) / 2;
-            g.drawString(scoreText, scoreX, gameOverY + 50);
+            g2.drawString(scoreText, scoreX, overlayY + 150);
 
-            g.setFont(new Font("Arial", Font.PLAIN, 20));
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
             String restartText = "Press SPACE to play again";
             metrics = g.getFontMetrics();
             int restartX = (boardWidth - metrics.stringWidth(restartText)) / 2;
-            g.drawString(restartText, restartX, gameOverY + 100);
+            g2.drawString(restartText, restartX, overlayY + 200);
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 20));
+            String homeText = "Press H for Home Screen";
+            metrics = g.getFontMetrics();
+            int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
+            g2.drawString(homeText, homeX, overlayY + 250);
         } else {
             g.setFont(new Font("Arial", Font.PLAIN, 15));
             g.drawString("Level: " + currentLevel, 10, 20);
             g.drawString("Score: " + score, 10, 35);
             g.drawString("Lives: " + lives, 10, 50);
+            g.drawString("Damage: " + damage, 10, 65);
             if (killCounter < 10) {
-                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 65);
+                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 80);
             } else {
-                g.drawString("Ultimate Ready (Press F)", 10, 65);
+                g.drawString("Ultimate Ready (Press F)", 10, 80);
             }
         }
     }
@@ -244,6 +338,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     alien.setAlive(false);
                     alienCount--;
                     score += 100;
+                    
+                    // Drop powerup
+                    assignPowerUp(alien.getX(), alien.getY());
                 }
             }
             
@@ -277,6 +374,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     alienCount--;
                     score += 100;
                     killCounter++;
+
+                    // Drop powerup
+                    assignPowerUp(alien.getX(), alien.getY());
                 }
             }
 
@@ -286,6 +386,34 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 if (boss.getHealth() <= 0) {
                     alienCount = 0; // Triggers level completion
                 }
+            }
+        }
+
+        // PowerUp Update
+        for (int i = powerUps.size() - 1; i >= 0; i--) {
+            PowerUp powerUp = powerUps.get(i);
+
+            if (!powerUp.isTaken()) {
+                double dx = ship.getX() - powerUp.getx();
+                double dy = ship.getY() - powerUp.gety();
+                double distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < ship.getWidth() / 2 + powerUp.getr()) {
+                    powerUp.setTaken(true);
+
+                    if (powerUp.getType() == 1) {
+                        // Extra life
+                        addLife();
+                    } else if (powerUp.getType() == 2) {
+                        // Extra damage
+                        addDamage();
+                    }
+                }
+            }
+
+            // Remove power-ups if taken or off-screen
+            if (powerUp.isTaken() || powerUp.update()) {
+                powerUps.remove(i);
             }
         }
 
@@ -369,6 +497,33 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
         // Clear used alien bullets
         alienBulletArray.removeIf(alienBullet -> alienBullet.getY() > boardHeight);
+    }
+
+
+    private void assignPowerUp(int x, int y){
+        double rand = Math.random();
+        if(rand < 0.001){
+            powerUps.add(new PowerUp(1, x, y));
+        } else if(rand < 0.1) {
+            powerUps.add(new PowerUp(2,x, y));
+        }
+    }
+
+    // Add life
+    private void addLife(){
+        if(lives < 5){
+            lives++;
+        }
+    }
+
+    // Boost damage
+    private void addDamage(){
+        if(damagePowerupCounter < 10){
+            damagePowerupCounter++;
+        } else {
+            damagePowerupCounter = 0;
+            damage += 0.5;
+        }
     }
 
     private void handleAlienShooting() {
@@ -490,6 +645,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                a.getY() + a.getHeight() > b.getY();
     }
 
+
     private boolean detectBossCollision(Block bullet, Boss boss) {
         // Add margins to create a tighter hit box
         int marginX = tileSize; // Horizontal margin
@@ -501,13 +657,33 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 (bullet.getY() + bullet.getHeight()) > (boss.getY() + marginY);
     }
 
+
+    private void goToHomeScreen(){
+        gameLoop.stop();
+
+        JFrame mainFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        mainFrame.getContentPane().removeAll();
+
+        MenuPanel menuPanel = new MenuPanel(mainFrame);
+        mainFrame.add(menuPanel);
+
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        move();
-        repaint();
-        if (gameOver) {
-            gameLoop.stop();
-            alienBulletArray.clear();
+        if(!isPaused){
+            move();
+            repaint();
+            if (gameOver) {
+                HighScoreManager.setHighScore(score);
+                gameLoop.stop();
+                alienBulletArray.clear();
+            }
         }
     }
 
@@ -517,6 +693,28 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
+
+        // Add explicit pause toggling
+        if (code == KeyEvent.VK_P) {
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                gameLoop.stop();
+            } else {
+                gameLoop.start();
+            }
+            repaint();
+            return;
+        }
+    
+        if(isPaused){
+            if(code == KeyEvent.VK_H){
+                goToHomeScreen();
+                return;
+            }
+            return;
+        }
+
         if (code == KeyEvent.VK_F && !isUltimateActive && killCounter >= requiredKills) {
             isUltimateActive = true;
             ultimateStartTime = System.currentTimeMillis();
@@ -535,6 +733,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         if (gameOver) {
             if (code == KeyEvent.VK_SPACE) {
                 resetGame();
+            } else if (code == KeyEvent.VK_H){
+                goToHomeScreen();
+                return;
             }
         } else {
             if (code == KeyEvent.VK_SPACE && !isUltimateActive) {

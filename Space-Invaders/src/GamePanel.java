@@ -381,7 +381,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
             if (!bullet.isUsed() && isBossLevel && boss != null && detectBossCollision(bullet, boss)) {
                 bullet.setUsed(true);
-                boss.setHealth(boss.getHealth() - 4); // Each bullet does 10 damage
+                boss.setHealth(boss.getHealth() - damage); // Each bullet does 10 damage
                 if (boss.getHealth() <= 0) {
                     alienCount = 0; // Triggers level completion
                 }

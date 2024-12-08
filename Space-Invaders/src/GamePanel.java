@@ -88,6 +88,10 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Pause
     private boolean isPaused = false;
 
+    /**
+     * GamePanel is the main panel for the Space Invaders game. It initializes the game
+     * components, loads images, sets up the game environment, and starts the game loop.
+     */
     public GamePanel() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.black);
@@ -697,6 +701,19 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyTyped(KeyEvent e) {}
 
+    /**
+     * Handles key press events to control the game.
+     * 
+     * @param e the KeyEvent triggered by a key press
+     * 
+     * The following key events are handled:
+     * - 'P': Toggles the pause state of the game. If the game is paused, the game loop stops.
+     *        If the game is resumed, the game loop starts.
+     * - 'H': When the game is paused, pressing 'H' will navigate to the home screen.
+     * - 'F': Activates the ultimate ability if it is not already active and the required number of kills is met.
+     * - 'LEFT': Moves the ship to the left if it is within the bounds of the game board.
+     * - 'RIGHT': Moves the ship to the right if it is within the bounds of the game board.
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
@@ -734,6 +751,18 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
     }
 
+    /**
+     * Handles the event when a key is released.
+     * 
+     * @param e the KeyEvent that indicates which key was released
+     * 
+     * If the game is over:
+     * - Pressing the space bar will reset the game.
+     * - Pressing the 'H' key will navigate to the home screen.
+     * 
+     * If the game is not over:
+     * - Pressing the space bar will fire a bullet from the ship if the ultimate ability is not active.
+     */
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();

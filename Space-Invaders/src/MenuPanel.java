@@ -3,10 +3,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * Represents the main menu panel of the game.
+ * This class provides the user interface for starting the game and viewing instructions.
+ */
 class MenuPanel extends JPanel {
     private JFrame mainFrame;
     private JPanel howToPlayPanel;
 
+    /**
+     * Constructs a MenuPanel with the specified main frame.
+     *
+     * @param frame the main frame of the application
+     */
     public MenuPanel(JFrame frame) {
         this.mainFrame = frame;
 
@@ -33,18 +42,18 @@ class MenuPanel extends JPanel {
         playButton.setForeground(Color.WHITE);
         playButton.setFocusPainted(false);
 
-        // How to Play Button
-        JButton howToPlayButton = new JButton("HOW TO PLAY");
-        howToPlayButton.setFont(new Font("Arial", Font.BOLD, 24));
-        howToPlayButton.setBackground(Color.BLACK);
-        howToPlayButton.setForeground(Color.WHITE);
-        howToPlayButton.setFocusPainted(false);
+        // // How to Play Button
+        // JButton howToPlayButton = new JButton("HOW TO PLAY");
+        // howToPlayButton.setFont(new Font("Arial", Font.BOLD, 24));
+        // howToPlayButton.setBackground(Color.BLACK);
+        // howToPlayButton.setForeground(Color.WHITE);
+        // howToPlayButton.setFocusPainted(false);
 
         // Button Panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.BLACK);
         buttonPanel.add(playButton);
-        // buttonPanel.add(howToPlayButton); (optional)
+        // buttonPanel.add(howToPlayButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
         // Play Button Action
@@ -55,20 +64,15 @@ class MenuPanel extends JPanel {
             }
         });
 
-        // How to Play Button Action (Optional)
-        // howToPlayButton.addActionListener(new ActionListener() {
-        //     @Override
-        //     public void actionPerformed(ActionEvent e) {
-        //         showHowToPlay();
-        //     }
-        // });
-
         // Show "How to Play" panel if high score is 0
         if (HighScoreManager.getHighScore() == 0) {
             SwingUtilities.invokeLater(this::showHowToPlay);
         }
     }
 
+    /**
+     * Starts the game by switching to the game panel.
+     */
     private void startGame() {
         // Remove menu panel
         mainFrame.getContentPane().removeAll();
@@ -81,6 +85,9 @@ class MenuPanel extends JPanel {
         gamePanel.requestFocusInWindow();
     }
 
+    /**
+     * Displays the "How to Play" panel.
+     */
     private void showHowToPlay() {
         if (howToPlayPanel == null) {
             howToPlayPanel = new JPanel(new BorderLayout());
@@ -130,6 +137,9 @@ class MenuPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Removes the "How to Play" panel.
+     */
     private void removeHowToPlay() {
         remove(howToPlayPanel);
         revalidate();

@@ -182,27 +182,33 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         }
 
         // Draw powerups
-        for(PowerUp powerUp : powerUps){
-            if(!powerUp.isTaken()){
+        for (PowerUp powerUp : powerUps) {
+            if (!powerUp.isTaken()) {
                 Graphics2D g2 = (Graphics2D) g;
+
                 Color powerUpColor = (powerUp.getType() == 1) ? Color.PINK : Color.YELLOW;
+
                 g2.setColor(powerUpColor);
-                g2.fillRect((int) (powerUp.getx() - powerUp.getr()),
-                            (int) (powerUp.gety() - powerUp.getr()),
-                            (int) (2 * powerUp.getr()),
-                            (int) (2 * powerUp.getr()));
+                g2.fillRect(
+                        (int) (powerUp.getX() - powerUp.getWidth()),
+                        (int) (powerUp.getY() - powerUp.getWidth()),
+                        (int) (2 * powerUp.getWidth()),
+                        (int) (2 * powerUp.getWidth())
+                );
 
-                g2.setColor(powerUpColor.darker());
-                g2.setStroke(new BasicStroke(2));
-
-                g2.drawRect((int) (powerUp.getx() - powerUp.getr()),
-                            (int) (powerUp.gety() - powerUp.getr()),
-                            (int) (2 * powerUp.getr()),
-                            (int) (2 * powerUp.getr()));
+                Color outlineColor = powerUpColor.darker();
+                g2.setColor(outlineColor);
 
                 g2.setStroke(new BasicStroke(2));
+                g2.drawRect(
+                        (int) (powerUp.getX() - powerUp.getWidth()),
+                        (int) (powerUp.getY() - powerUp.getWidth()),
+                        (int) (2 * powerUp.getWidth()),
+                        (int) (2 * powerUp.getWidth())
+                );
             }
         }
+
 
         // Draw game over text
         g.setColor(Color.white);
@@ -299,6 +305,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
             int xyz = 10;
             g2.drawString("Damage: " + damage, 10, boardHeight - 30);
+
             g2.setColor(Color.YELLOW);
             g2.fillRect(10, boardHeight - 20, damagePowerupCounter * xyz, xyz);
             g2.setColor(Color.YELLOW.darker());
@@ -403,21 +410,15 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         for (int i = powerUps.size() - 1; i >= 0; i--) {
             PowerUp powerUp = powerUps.get(i);
 
-            if (!powerUp.isTaken()) {
-                double dx = ship.getX() - powerUp.getx();
-                double dy = ship.getY() - powerUp.gety();
-                double distance = Math.sqrt(dx * dx + dy * dy);
+            if (!powerUp.isTaken() && detectCollision(ship, powerUp)) {
+                powerUp.setTaken(true);
 
-                if (distance < ship.getWidth() / 2 + powerUp.getr()) {
-                    powerUp.setTaken(true);
-
-                    if (powerUp.getType() == 1) {
-                        // Extra life
-                        addLife();
-                    } else if (powerUp.getType() == 2) {
-                        // Extra damage
-                        addDamage();
-                    }
+                if (powerUp.getType() == 1) {
+                    // Extra life
+                    addLife();
+                } else if (powerUp.getType() == 2) {
+                    // Extra damage
+                    addDamage();
                 }
             }
 
@@ -527,7 +528,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     // Boost damage
     private void addDamage(){
-        if(damagePowerupCounter < 10){
+        if(damagePowerupCounter < 9){
             damagePowerupCounter++;
         } else {
             damagePowerupCounter = 0;

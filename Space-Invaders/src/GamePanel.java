@@ -286,16 +286,27 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             int homeX = (boardWidth - metrics.stringWidth(homeText)) / 2;
             g2.drawString(homeText, homeX, overlayY + 250);
         } else {
-            g.setFont(new Font("Arial", Font.PLAIN, 15));
-            g.drawString("Level: " + currentLevel, 10, 20);
-            g.drawString("Score: " + score, 10, 35);
-            g.drawString("Lives: " + lives, 10, 50);
-            g.drawString("Damage: " + damage, 10, 65);
+            Graphics2D g2 = (Graphics2D) g;
+
+            g2.setFont(new Font("Arial", Font.PLAIN, 15));
+            g2.drawString("Level: " + currentLevel, 10, 20);
+            g2.drawString("Score: " + score, 10, 35);
+            g2.drawString("Lives: " + lives, 10, 50);
             if (killCounter < 10) {
-                g.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 80);
+                g2.drawString("Ultimate in " + Math.max(0, requiredKills - killCounter), 10, 65);
             } else {
-                g.drawString("Ultimate Ready (Press F)", 10, 80);
+                g2.drawString("Ultimate Ready (Press F)", 10, 65);
             }
+            int xyz = 10;
+            g2.drawString("Damage: " + damage, 10, boardHeight - 30);
+            g2.setColor(Color.YELLOW);
+            g2.fillRect(10, boardHeight - 20, damagePowerupCounter * xyz, xyz);
+            g2.setColor(Color.YELLOW.darker());
+            g2.setStroke(new BasicStroke(2));
+            for(int i = 0; i < 10; i++){
+                g.drawRect(10 + xyz * i, boardHeight - 20, xyz, xyz);
+            }
+            g2.setStroke(new BasicStroke(1));
         }
     }
 
@@ -443,7 +454,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     createBoss();
                 } else {
                     // Regular level transition
-                    if ((currentLevel - 1) % 5 == 0) {  // After boss level
+                    if ((currentLevel - 1) % 10 == 0) {  // After boss level
                         alienColumns = 3;
                         alienRows = 2;
                     } else {

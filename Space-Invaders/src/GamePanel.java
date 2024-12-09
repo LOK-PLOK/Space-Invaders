@@ -518,7 +518,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
 
     private void assignPowerUp(int x, int y){
         double rand = Math.random();
-        if(rand < 0.001){
+        if(rand < 0.004){
             powerUps.add(new PowerUp(1, x, y));
         } else if(rand < 0.1) {
             powerUps.add(new PowerUp(2,x, y));

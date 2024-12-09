@@ -373,7 +373,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
             }
 
             if (isBossLevel && boss != null && detectCollision(ultimateLaser, boss)) {
-                boss.setHealth(boss.getHealth() - 1); // Ultimate does 1 damage per frame
+                boss.setHealth(boss.getHealth() - 0.5); // Ultimate does 0.5 damage per frame
                 if (boss.getHealth() <= 0) {
                     alienCount = 0;
                 }

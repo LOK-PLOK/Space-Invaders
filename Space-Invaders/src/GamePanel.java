@@ -49,6 +49,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int bossFireCounter = bossFireRate;
     private int bossPatternCounter = 0;
     private final int PATTERNS = 3;
+    private double bossHP = 150;
 
     // Bullets
     private ArrayList<BulletBlock> bulletArray;
@@ -59,8 +60,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Ultimate Bar
     private boolean isUltimateActive = false;
     private long ultimateStartTime = 0;
-    private final long duration = 200000;
-    private final int requiredKills = 1;
+    private final long duration = 2000;
+    private final int requiredKills = 10;
     private int killCounter = 0;
     private Block ultimateLaser;
 
@@ -123,7 +124,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         int bossX = (boardWidth - BOSS_WIDTH) / 2;
         int bossY = tileSize;
         boss = new Boss(bossX, bossY, BOSS_WIDTH, BOSS_HEIGHT, bossImg);
-        boss.setHealth(150);
+        boss.setHealth(bossHP);
         bossVelocityX = 2;
         isBossLevel = true;
         alienCount = 1;
@@ -470,8 +471,6 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     alienArray.clear();
                     bulletArray.clear();
                     createAliens();
-
-
                 }
             } else if (boss != null && boss.getHealth() <= 0) {
                 // Boss defeated
@@ -491,6 +490,9 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 alienColumns = 3;
                 alienRows = 2;
                 createAliens();
+
+                // Increment boss hp
+                bossHP += 50.0;
             }
         }
 

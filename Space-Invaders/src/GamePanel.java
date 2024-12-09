@@ -59,8 +59,8 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     // Ultimate Bar
     private boolean isUltimateActive = false;
     private long ultimateStartTime = 0;
-    private final long duration = 2000;
-    private final int requiredKills = 10;
+    private final long duration = 200000;
+    private final int requiredKills = 1;
     private int killCounter = 0;
     private Block ultimateLaser;
 
@@ -471,12 +471,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                     bulletArray.clear();
                     createAliens();
 
-                    // Adjust alien fire rate
-                    if (currentLevel > 1 && (currentLevel - 1) % 10 == 0 && alienFireRate > 60) {
-                        alienFireRate -= 60;
-                    } else if (alienFireRate <= 60 && alienFireRate > 10) {
-                        alienFireRate -= 10;
-                    }
+
                 }
             } else if (boss != null && boss.getHealth() <= 0) {
                 // Boss defeated
@@ -484,6 +479,13 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
                 boss = null;
                 score += 1000;  // Bonus score for defeating boss
                 currentLevel++;
+
+                // Adjust alien fire rate
+                if ((currentLevel - 1) % 10 == 0 && alienFireRate > 60) {
+                    alienFireRate -= 60;
+                } else if (alienFireRate <= 60 && alienFireRate > 10) {
+                    alienFireRate -= 10;
+                }
 
                 // Setup next regular level
                 alienColumns = 3;

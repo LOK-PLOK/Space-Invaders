@@ -11,6 +11,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     private int columns = 16;
     private int boardWidth = tileSize * columns;
     private int boardHeight = tileSize * rows;
+    private Image backgroundImg;
 
     // Images
     private Image shipImg;
@@ -100,6 +101,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
         addKeyListener(this);
 
         // Load Images
+        backgroundImg = new ImageIcon(getClass().getResource("./Images/space.png")).getImage();
         shipImg = new ImageIcon(getClass().getResource("./Images/ship.png")).getImage();
         alienImgArray = new ArrayList<>();
         alienImgArray.add(new ImageIcon(getClass().getResource("./Images/alien.png")).getImage());
@@ -140,6 +142,7 @@ public class GamePanel extends JPanel implements ActionListener, KeyListener {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
+        g.drawImage(backgroundImg, 0, 0, boardWidth, boardHeight, this);
         draw(g);
     }
 
